@@ -1,19 +1,28 @@
 import React from "react";
 import "./styles.css";
 
+import { useSnapshot } from "./snapshot";
+
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
 import theme from "react-syntax-highlighter/dist/esm/styles/hljs/tomorrow-night-blue";
 SyntaxHighlighter.registerLanguage("javascript", js);
 
-export default function App({
-  snapshot: {
-    a,
-    $: { i, j, v }
-  },
-  step,
-  callback: { prev, next, reset }
-}) {
+export default function App() {
+  const {
+    snapshot: {
+      a,
+      $: { i, j, v }
+    },
+    controller
+  } = useSnapshot();
+
+  const getValueHue = (n) => n * (20 + 20 * Math.sin((n * Math.PI) / 27));
+  const skip = (e) => {
+    if (e.key === "ArrowLeft") controller.prev();
+    else if (e.key === "ArrowRight") controller.next();
+  };
+
   return (
     <div className="App">
       <h1>Insertion Sort</h1>
@@ -23,7 +32,8 @@ export default function App({
             language="javascript"
             showLineNumbers
             style={theme}
-          >{`const a = [5, 2, 4, 6, 1, 3];
+          >
+            {`const a = [5, 2, 4, 6, 1, 3];
 insertionSort(a);
 
 function insertionSort(a) {
@@ -38,19 +48,13 @@ function insertionSort(a) {
     a[j+1] = v;
   }
 }
-`}</SyntaxHighlighter>
+`}
+          </SyntaxHighlighter>
         </div>
         <div className="viewer">
           <div className="viewport">
             <div className="align-center" style={{ alignItems: "flex-end" }}>
-              <div
-                style={{
-                  position: "absolute",
-                  left: 30,
-                  marginBottom: 10,
-                  width: 85
-                }}
-              >
+              <div className="arrayVariable">
                 <span className="variable">a</span>=
               </div>
               <div className="array">
@@ -72,9 +76,7 @@ function insertionSort(a) {
                         key={i}
                         style={{
                           height: 50 + 10 * (n - 1),
-                          background: `hsl(${
-                            n * (20 + 20 * Math.sin((n * Math.PI) / 27))
-                          }deg, 65%, 50%)`
+                          background: `hsl(${getValueHue(n)}deg, 65%, 50%)`
                         }}
                       >
                         {n}
@@ -90,39 +92,40 @@ function insertionSort(a) {
                 className="cacheInner"
                 style={{
                   background:
-                    v == null
+                    v === null
                       ? "transparent"
-                      : `hsl(${
-                          v * (20 + 20 * Math.sin((v * Math.PI) / 27))
-                        }deg, 80%, 45%)`
+                      : `hsl(${getValueHue(v)}deg, 80%, 45%)`
                 }}
               >
                 {v}
               </span>
             </div>
           </div>
-          <div className="controller">
+          <div className="controller" tabIndex={0} onKeyDown={skip}>
             <button
-              className="material-icons reset"
-              onClick={reset}
-              disabled={step.current <= 0}
+              className={`material-icons reset ${
+                controller.cursor <= 0 && "disabled"
+              }`}
+              onClick={controller.reset}
             >
               replay
             </button>
             <button
-              className="material-icons"
-              onClick={prev}
-              disabled={step.current <= 0}
+              className={`material-icons ${
+                controller.cursor <= 0 && "disabled"
+              }`}
+              onClick={controller.prev}
             >
               skip_previous
             </button>
             <span className="stepCount">
-              {step.current + 1}/{step.length}
+              {controller.cursor + 1}/{controller.length}
             </span>
             <button
-              className="material-icons"
-              onClick={next}
-              disabled={step.current >= step.length - 1}
+              className={`material-icons ${
+                controller.cursor >= controller.length - 1 && "disabled"
+              }`}
+              onClick={controller.next}
             >
               skip_next
             </button>
