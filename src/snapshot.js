@@ -2,11 +2,12 @@ import { useState } from "react";
 
 const snapshots = [];
 
-export function takeSnapshot(targets) {
+export function takeSnapshot(variables, operation) {
   const snapshot = {};
-  for (const k in targets) {
-    snapshot[k] = deepCopy(targets[k]);
+  for (const k in variables) {
+    snapshot[k] = deepCopy(variables[k]);
   }
+  snapshot[Symbol.for("operation")] = operation;
   snapshots.push(snapshot);
 }
 
