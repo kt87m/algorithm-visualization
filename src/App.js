@@ -2,6 +2,7 @@ import React from "react";
 import "./styles.css";
 
 import { useSnapshot } from "./snapshot";
+import { getAnimation } from "./animation";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
@@ -12,10 +13,13 @@ export default function App() {
   const {
     snapshot: {
       a,
-      $: { i, j, v }
+      $: { i, j, v },
+      [Symbol.for("operation")]: operation
     },
     controller
   } = useSnapshot();
+
+  const animation = getAnimation(operation);
 
   const getValueHue = (n) => n * (20 + 20 * Math.sin((n * Math.PI) / 27));
   const skip = (e) => {
@@ -25,6 +29,7 @@ export default function App() {
 
   return (
     <div className="App">
+      <style>{animation}</style>
       <h1>Insertion Sort</h1>
       <div className="algorithm">
         <div className="codeView">
@@ -74,6 +79,7 @@ function insertionSort(a) {
                     {a.map((n, i) => (
                       <div
                         key={i}
+                        data-variable-name={`a.${i}`}
                         style={{
                           height: 50 + 10 * (n - 1),
                           background: `hsl(${getValueHue(n)}deg, 65%, 50%)`
@@ -86,18 +92,21 @@ function insertionSort(a) {
                 </div>
               </div>
             </div>
-            <div className="cache align-center">
+            <div className="align-center" style={{ marginTop: 50 }}>
               <span className="variable">v</span>=
-              <span
-                className="cacheInner"
-                style={{
-                  background:
-                    v === null
-                      ? "transparent"
-                      : `hsl(${getValueHue(v)}deg, 80%, 45%)`
-                }}
-              >
-                {v}
+              <span className="cache">
+                <span
+                  className="cacheInner"
+                  data-variable-name="v"
+                  style={{
+                    background:
+                      v === null
+                        ? "transparent"
+                        : `hsl(${getValueHue(v)}deg, 80%, 45%)`
+                  }}
+                >
+                  {v}
+                </span>
               </span>
             </div>
           </div>
